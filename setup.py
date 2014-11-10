@@ -30,7 +30,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     detect_db()
-
-    if args.file:
-        import_csv(args.file)
+    import_csv(args.file)
 

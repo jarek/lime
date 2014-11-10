@@ -1,0 +1,14 @@
+<!doctype html>
+<title>Lime</title>
+
+
+{% for category in amount_categories %}
+    <table border=1>
+    {% for amount in category %}
+        <tr>
+            <td>{{ amount.key }}</td>
+            <td align=right>{{ "{:.2f}".format(amount.amount) }}</td>
+        </tr>
+    {% endfor %}
+    </table>
+{% endfor %}

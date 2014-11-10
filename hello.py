@@ -67,16 +67,28 @@ class Transaction(db.Model):
     def __repr__(self):
         return '<Transaction at %s for %s>' % (self.date, self.bankAmount)
 
-@app.route('/')
-def hello_world():
+def group(query, group_by):
+    field_name = str(group_by).replace('Transaction.', '')
+    sums = query.add_columns(func.sum(Transaction.bankAmount).label('sum'))\
+        .group_by(group_by).order_by(desc('sum'))
+
+    return [{'key': getattr(s[0], field_name), \
+             'amount': s[1] if s[1] is not None else 0} for s in sums]
+
+@app.route('/stats/')
+def show_stats():
     joint = Transaction.query.filter_by(person='')
 
-    sums = Transaction.query.add_columns(func.sum(Transaction.bankAmount).label('sum')).group_by(Transaction.person).all()
+    return render_template('stats.html',
+        amount_categories = [
+            group(Transaction.query, Transaction.person),
+            group(joint, Transaction.account),
+            group(Transaction.query, Transaction.category),
+            group(Transaction.query, Transaction.merchant)[:20]])
 
-    sumsByAccount = joint.add_columns(func.sum(Transaction.bankAmount).label('sum')).group_by(Transaction.account).order_by(desc('sum')).all()
-
-    return '<br/>'.join([str(s[0].person) + str(s[1]) for s in sums]) + '<br/>' + '<br/>'.join([str(s[0].account) + ' : ' + str(s[1]) for s in sumsByAccount])
-    #return render_template('index.html')
+@app.route('/')
+def show_home():
+    return 'Hello world!'
 
 if __name__ == '__main__':
     app.run(debug=True)
