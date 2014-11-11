@@ -17,6 +17,8 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'da
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
 db = SQLAlchemy(app)
 
+fields = ['date', 'person', 'merchant', 'notes', 'category', 'account', 'bankCurrency', 'transactionCurrency']
+
 class Transaction(db.Model):
     __tablename__ = 'transactions'
 
@@ -73,7 +75,15 @@ def group(query, group_by):
         .group_by(group_by).order_by(desc('sum'))
 
     return [{'key': getattr(s[0], field_name), \
+             'keyname': field_name, \
+             'data': s[0], \
              'amount': s[1] if s[1] is not None else 0} for s in sums]
+
+def make_template_data(grouped_data):
+    for grouped in grouped_data:
+        grouped['other'] = [f for f in fields if f != grouped['keyname']]
+
+    return grouped_data
 
 @app.route('/stats/')
 def show_stats():
@@ -81,10 +91,10 @@ def show_stats():
 
     return render_template('stats.html',
         amount_categories = [
-            group(Transaction.query, Transaction.person),
-            group(joint, Transaction.account),
-            group(Transaction.query, Transaction.category),
-            group(Transaction.query, Transaction.merchant)[:20]])
+            make_template_data(group(Transaction.query, Transaction.person)),
+            make_template_data(group(joint, Transaction.account)),
+            make_template_data(group(Transaction.query, Transaction.category)),
+            make_template_data(group(Transaction.query, Transaction.merchant)[:20])])
 
 @app.route('/')
 def show_home():

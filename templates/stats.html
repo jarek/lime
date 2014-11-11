@@ -8,6 +8,7 @@
         <tr>
             <td>{{ amount.key }}</td>
             <td align=right>{{ "{:.2f}".format(amount.amount) }}</td>
+            <td>current: {{amount.keyname}} = {{amount.key}}. break down by: {{ ', '.join(amount.other) }}</td>
         </tr>
     {% endfor %}
     </table>
