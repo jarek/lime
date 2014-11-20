@@ -3,7 +3,6 @@
 
 from __future__ import unicode_literals
 import argparse
-import unicodecsv
 import hello
 
 
@@ -16,9 +15,8 @@ def detect_db():
 
 def import_csv(filename):
     with open(filename, 'rb') as csvfile:
-        reader = unicodecsv.DictReader(csvfile, hello.Transaction.CSV_ROW_TITLES)
-        for row in reader:
-            hello.db.session.add(hello.Transaction(row))
+        for transaction in hello.csv.transactions_from_csv(csvfile):
+            hello.db.session.add(transaction)
 
     hello.db.session.commit()
 

@@ -28,15 +28,15 @@ class Transaction(db.Model):
     transactionAmount = db.Column(db.Float)
     transactionCurrency = db.Column(db.String)
 
-    def __init__(self, row):
-        # straightforward text fields
-        self.person = row['person']
-        self.merchant = row['merchant']
-        self.notes = row['notes']
-        self.category = row['category']
-        self.account = row['account']
-        self.bankCurrency = row['bankCurrency']
-        self.transactionCurrency = row['transactionCurrency']
+    def __repr__(self):
+        return '<Transaction at %s for %s>' % (self.date, self.bankAmount)
+
+    def from_dict(self, row):
+        # most fields are straightforward strings, import all of those at once
+        text_properties = {field: value for field, value in row.items()
+            if field not in ['bankAmount', 'transactionAmount', 'date']}
+
+        self.__dict__.update(text_properties)
 
         # parse datetime from string
         try:
@@ -59,6 +59,14 @@ class Transaction(db.Model):
         except:
             pass
 
-    def __repr__(self):
-        return '<Transaction at %s for %s>' % (self.date, self.bankAmount)
+        return self
+
+    def to_dict(self):
+        # get a list of object's fields that are in CSV_ROW_TITLES
+        result = {field: value for field, value in vars(self).items() if field in self.CSV_ROW_TITLES}
+
+        # ensure formatting of date fields
+        result['date'] = datetime.datetime.strftime(self.date, '%Y/%m/%d %H:%M:%S')
+
+        return result
 

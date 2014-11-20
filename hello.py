@@ -6,8 +6,9 @@ from flask import Flask
 from flask import render_template
 from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import func, desc
-from app import create_app, db
+from app import create_app, db, csv
 from app.models import Transaction
+
 
 app = create_app()
 
@@ -38,6 +39,10 @@ def show_stats():
             make_template_data(group(joint, Transaction.account)),
             make_template_data(group(Transaction.query, Transaction.category)),
             make_template_data(group(Transaction.query, Transaction.merchant)[:20])])
+
+@app.route('/export/')
+def export_csv():
+    return csv.transactions_to_csv_string(Transaction.query.all())
 
 @app.route('/')
 def show_home():
