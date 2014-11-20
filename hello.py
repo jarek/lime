@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 # coding=utf-8
 
 from __future__ import unicode_literals
@@ -11,7 +11,6 @@ from app.models import Transaction
 
 app = create_app()
 
-fields = ['date', 'person', 'merchant', 'notes', 'category', 'account', 'bankCurrency', 'transactionCurrency']
 
 def group(query, group_by):
     field_name = str(group_by).replace('Transaction.', '')
@@ -25,7 +24,7 @@ def group(query, group_by):
 
 def make_template_data(grouped_data):
     for grouped in grouped_data:
-        grouped['other'] = [f for f in fields if f != grouped['keyname']]
+        grouped['other'] = [f for f in Transaction.CLASSIFICATION_FIELDS if f != grouped['keyname']]
 
     return grouped_data
 

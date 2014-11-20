@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 # coding=utf-8
 
 from __future__ import unicode_literals
@@ -15,9 +15,8 @@ def detect_db():
         hello.db.create_all()
 
 def import_csv(filename):
-    ROW_TITLES = ['date','person','merchant','notes','category','account','bankAmount','bankCurrency','transactionAmount','transactionCurrency','effective exchange rate']
     with open(filename, 'rb') as csvfile:
-        reader = unicodecsv.DictReader(csvfile, ROW_TITLES)
+        reader = unicodecsv.DictReader(csvfile, hello.Transaction.CSV_ROW_TITLES)
         for row in reader:
             hello.db.session.add(hello.Transaction(row))
 
@@ -29,6 +28,7 @@ if __name__ == '__main__':
     parser.add_argument('file', type=str, help='name of a CSV file to process')
     args = parser.parse_args()
 
-    detect_db()
-    import_csv(args.file)
+    with hello.app.app_context():
+        detect_db()
+        import_csv(args.file)
 

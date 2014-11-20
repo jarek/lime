@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 # coding=utf-8
 
 from __future__ import unicode_literals
@@ -7,6 +7,12 @@ from flask.ext.sqlalchemy import SQLAlchemy
 from . import db
 
 class Transaction(db.Model):
+    # row titles/names as stored in source/export CSV
+    CSV_ROW_TITLES = ['date','person','merchant','notes','category','account','bankAmount','bankCurrency','transactionAmount','transactionCurrency','effective exchange rate']
+
+    # CLASSIFICATION_FIELDS are those we can filter list of Transactions by
+    CLASSIFICATION_FIELDS = ['date', 'person', 'merchant', 'notes', 'category', 'account', 'bankCurrency', 'transactionCurrency']
+
     __tablename__ = 'transactions'
 
     # define fields
