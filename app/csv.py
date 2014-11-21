@@ -17,7 +17,8 @@ def transactions_from_csv(f):
     return results
 
 def transactions_to_csv(f, all_transactions):
-    writer = unicodecsv.DictWriter(f, fieldnames = Transaction.CSV_ROW_TITLES, lineterminator='\n')
+    writer = unicodecsv.DictWriter(f, fieldnames = Transaction.CSV_ROW_TITLES,
+        quoting=unicodecsv.QUOTE_ALL, lineterminator='\n')
 
     for row in all_transactions:
         writer.writerow(row.to_dict())

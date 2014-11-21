@@ -8,7 +8,7 @@ from . import db
 
 class Transaction(db.Model):
     # row titles/names as stored in source/export CSV
-    CSV_ROW_TITLES = ['date','person','merchant','notes','category','account','bankAmount','bankCurrency','transactionAmount','transactionCurrency','effective exchange rate']
+    CSV_ROW_TITLES = ['date','person','merchant','notes','category','account','bankAmount','bankCurrency','transactionAmount','transactionCurrency']
 
     # CLASSIFICATION_FIELDS are those we can filter list of Transactions by
     CLASSIFICATION_FIELDS = ['date', 'person', 'merchant', 'notes', 'category', 'account', 'bankCurrency', 'transactionCurrency']
@@ -66,7 +66,17 @@ class Transaction(db.Model):
         result = {field: value for field, value in vars(self).items() if field in self.CSV_ROW_TITLES}
 
         # ensure formatting of date fields
-        result['date'] = datetime.datetime.strftime(self.date, '%Y/%m/%d %H:%M:%S')
+        if self.date.hour == 0 and self.date.minute == 0 and self.date.second == 0:
+            # allow specifying datetimes with date part only
+            result['date'] = datetime.datetime.strftime(self.date, '%Y/%m/%d')
+        else:
+            result['date'] = datetime.datetime.strftime(self.date, '%Y/%m/%d %H:%M:%S')
+
+        # export whole numbers as ints to match input csv formatting
+        if self.bankAmount is not None and self.bankAmount == int(self.bankAmount):
+            result['bankAmount'] = int(self.bankAmount)
+        if self.transactionAmount is not None and self.transactionAmount == int(self.transactionAmount):
+            result['transactionAmount'] = int(self.transactionAmount)
 
         return result
 

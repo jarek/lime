@@ -14,12 +14,12 @@ TEST_SQLITE = 'tests.sqlite'
 # requires:
 # - that a TEST_SQLITE file exists in app directory - easiest to copy an existing database
 # - that a TEST_CSV valid import CSV is specified and exists in root directory
-#   - must not have row headings
+#   - must not have row headings or empty lines
 #   - newlines must be \n with no newline after last entry in the file
-#   - only fields with special characters (commas particularly) should be quoted
-#   - effective exchange rate must not be specified (it can be calculated)
-#   - all numbers must be specified as floats (so e.g. 1250.0 rather than 1250)
-# TODO: make this match CSV export format more closely
+#   - effective exchange rate row must not be included
+#   - all fields must be quoted
+# This can be done in gnumeric with Data -> Export Data -> Export into Other Format
+# and choosing Text (configurable) with Line Termination: Unix and Quoting: Always
 # TODO: come up with a more sensible test rather than just comparing CSV files
 
 class ImportExportTestCase(unittest.TestCase):
