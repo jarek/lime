@@ -3,7 +3,10 @@
 
 from __future__ import unicode_literals
 import datetime
+import wtforms
+import sqlalchemy
 from flask.ext.sqlalchemy import SQLAlchemy
+from flask.ext import wtf
 from . import db
 
 class Transaction(db.Model):
@@ -31,12 +34,22 @@ class Transaction(db.Model):
     def __repr__(self):
         return '<Transaction at %s for %s>' % (self.date, self.bankAmount)
 
+    @sqlalchemy.orm.reconstructor
+    def init_on_load(self):
+        # fill in transactionCurrency and transactionAmount where not specified
+        if not self.transactionCurrency and not self.transactionAmount \
+            and self.bankCurrency and self.bankAmount:
+            self.transactionCurrency = self.bankCurrency
+            self.transactionAmount = self.bankAmount
+
     def from_dict(self, row):
         # most fields are straightforward strings, import all of those at once
         text_properties = {field: value for field, value in row.items()
             if field not in ['bankAmount', 'transactionAmount', 'date']}
 
         self.__dict__.update(text_properties)
+
+
 
         # parse datetime from string
         try:
@@ -79,4 +92,11 @@ class Transaction(db.Model):
             result['transactionAmount'] = int(self.transactionAmount)
 
         return result
+
+class TransactionForm(wtf.Form):
+    transactionAmount = wtforms.DecimalField('Amount')
+    notes = wtforms.StringField('Notes')
+    category = wtforms.StringField('Category')
+    transactionCurrency = wtforms.StringField('Currency', default = 'GBP')
+    submit = wtforms.SubmitField('Save')
 

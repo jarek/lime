@@ -1,0 +1,15 @@
+<!doctype html>
+<title>Lime</title>
+
+<script type="text/javascript">
+var allCategories = {{ allCategories|tojson|safe }}
+var allCurrencies = {{ allCurrencies|tojson|safe }}
+</script>
+
+<form method="POST">
+    {{ form.transactionAmount.label }} {{ form.transactionAmount() }}
+    {{ form.notes.label }} {{ form.notes() }}
+    {{ form.category.label }} {{ form.category() }}
+    {{ form.transactionCurrency.label }} {{ form.transactionCurrency() }}
+    {{ form.submit() }}
+</form>

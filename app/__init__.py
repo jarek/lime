@@ -18,6 +18,7 @@ def create_app(database_file = 'data.sqlite'):
     basedir = os.path.abspath(os.path.dirname(__file__))
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, database_file)
     app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
+    app.config['SECRET_KEY'] = 'TODO: input a proper key for CSRF protection'
     
     db.init_app(app)
 
