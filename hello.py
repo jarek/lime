@@ -2,8 +2,8 @@
 # coding=utf-8
 
 from __future__ import unicode_literals
-from flask import Flask
-from flask import render_template
+from collections import defaultdict
+from flask import Flask, request, render_template
 from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import func, desc
 from app import create_app, db, csv
@@ -37,14 +37,12 @@ def get_unique(query, group_by):
     # the database - and the query above - often doesn't have info for transactionCurrency,
     # it is filled in in the object. so we have to loop over objects and group them again.
     # TODO: easier way to do this? or require transactionCurrency to always be set in db?
-    sums = {}
+    sums = defaultdict(int)
     for t in grouped:
         name = getattr(t[0], group_by.name)
-        if name in sums:
-            sums[name] += t[1]
-        else:
-            sums[name] = t[1]
+        sums[name] += t[1]
 
+    # sort by count t[1] and return names t[0]
     return [t[0] for t in sorted(sums.items(), key=lambda t: t[1], reverse = True)]
 
 @app.route('/stats/')
@@ -62,11 +60,26 @@ def show_stats():
 def export_csv():
     return csv.transactions_to_csv_string(Transaction.query.all())
 
-@app.route('/')
+@app.route('/', methods = ['GET', 'POST'])
 def show_home():
     form = TransactionForm()
+
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            transaction = form.to_transaction()
+            db.session.add(transaction)
+        else:
+            # debug
+            for fieldName, errorMessages in form.errors.iteritems():
+                for err in errorMessages:
+                    print fieldName, err
+
     allCategories = get_unique(Transaction.query, Transaction.category)
     allCurrencies = get_unique(Transaction.query, Transaction.transactionCurrency)
+
+    # prepopulate currency with most common currency
+    form.transactionCurrency.data = allCurrencies[0] if len(allCurrencies) > 0 else None
+
     return render_template('index.html', form = form,
         allCategories = allCategories, allCurrencies = allCurrencies)
 

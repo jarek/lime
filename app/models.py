@@ -49,17 +49,18 @@ class Transaction(db.Model):
 
         self.__dict__.update(text_properties)
 
-
-
         # parse datetime from string
-        try:
-            self.date = datetime.datetime.strptime(row['date'], '%Y/%m/%d %H:%M:%S')
-        except:
+        if isinstance(row['date'], datetime.datetime):
+            self.date = row['date']
+        else:
             try:
-                self.date = datetime.datetime.strptime(row['date'], '%Y/%m/%d')
+                self.date = datetime.datetime.strptime(row['date'], '%Y/%m/%d %H:%M:%S')
             except:
-                print 'could not parse ' + row['date']
-                pass
+                try:
+                    self.date = datetime.datetime.strptime(row['date'], '%Y/%m/%d')
+                except:
+                    print 'could not parse ' + row['date']
+                    pass
 
         # parse numeric amounts
         try:
@@ -94,9 +95,24 @@ class Transaction(db.Model):
         return result
 
 class TransactionForm(wtf.Form):
-    transactionAmount = wtforms.DecimalField('Amount')
+    transactionAmount = wtforms.DecimalField('Amount', [wtforms.validators.Required()])
+    merchant = wtforms.StringField('Merchant', [wtforms.validators.Required()])
     notes = wtforms.StringField('Notes')
     category = wtforms.StringField('Category')
-    transactionCurrency = wtforms.StringField('Currency', default = 'GBP')
+    transactionCurrency = wtforms.StringField('Currency')
     submit = wtforms.SubmitField('Save')
+
+    def to_dict(self):
+        return {field: value.data for field, value in vars(self).items() if field in Transaction.CSV_ROW_TITLES}
+
+    def to_transaction(self):
+        as_dict = self.to_dict()
+
+        as_dict['date'] = datetime.datetime.now()
+        if as_dict.get('bankAmount') == None:
+            as_dict['bankAmount'] = as_dict['transactionAmount']
+        if as_dict.get('bankCurrency') == None:
+            as_dict['bankCurrency'] = as_dict['transactionCurrency']
+
+        return Transaction().from_dict(as_dict)
 
