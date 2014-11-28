@@ -3,6 +3,7 @@
 
 from __future__ import unicode_literals
 from collections import defaultdict
+from datetime import datetime
 from flask import Flask, request, render_template
 from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import func, desc
@@ -23,9 +24,10 @@ def group(query, group_by):
              'data': s[0], \
              'amount': s[1] if s[1] is not None else 0} for s in sums]
 
-def make_template_data(grouped_data):
+def make_template_data(grouped_data, description = None):
     for grouped in grouped_data:
         grouped['other'] = [f for f in Transaction.CLASSIFICATION_FIELDS if f != grouped['keyname']]
+        grouped['description'] = description
 
     return grouped_data
 
@@ -47,14 +49,24 @@ def get_unique(query, group_by):
 
 @app.route('/stats/')
 def show_stats():
-    joint = Transaction.query.filter_by(person='')
+    joint = Transaction.query.filter_by(person='').filter_by(bankCurrency = 'GBP')
+
+    timespan = Transaction.query \
+        .add_columns(func.max(Transaction.date).label('maxDate')) \
+        .add_columns(func.min(Transaction.date).label('minDate'))
+    datespan = timespan[0][1] - timespan[0][2]
 
     return render_template('stats.html',
+        datespan = datespan,
+        number_of_days = datespan.total_seconds() / (60*60*24),
+        number_of_months = datespan.total_seconds() / (60*60*24*30),
         amount_categories = [
-            make_template_data(group(Transaction.query, Transaction.person)),
-            make_template_data(group(joint, Transaction.account)),
-            make_template_data(group(Transaction.query, Transaction.category)),
-            make_template_data(group(Transaction.query, Transaction.merchant)[:20])])
+            make_template_data(group(Transaction.query, Transaction.person), "per person"),
+            make_template_data(group(joint, Transaction.account), "joint transactions by account"),
+            make_template_data(group(Transaction.query, Transaction.category), "all transactions by category"),
+            make_template_data(group(joint.filter_by(account='cash'), Transaction.category), "cash transactions"),
+            make_template_data(group(Transaction.query, Transaction.merchant)[:20], "top 20 merchants")
+        ])
 
 @app.route('/export/')
 def export_csv():

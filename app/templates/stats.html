@@ -3,12 +3,30 @@
 
 
 {% for category in amount_categories %}
+    {% if category[0].description is not none: %}
+        <h2>{{ category[0].description }}</h2>
+    {% endif %}
     <table border=1>
+        <tr>
+            <th>{{ category[0].keyname }}</th>
+            <th>amount</th>
+            <th>per day</th>
+            <th>per week</th>
+            <th>per month</th>
+            <th></th>
+        </tr>
     {% for amount in category %}
         <tr>
-            <td>{{ amount.key }}</td>
+            <td>{{ amount.key or "<blank>" }}</td>
             <td align=right>{{ "{:.2f}".format(amount.amount) }}</td>
-            <td>current: {{amount.keyname}} = {{amount.key}}. break down by: {{ ', '.join(amount.other) }}</td>
+            <td align=right>{{ "{:.2f}".format(amount.amount / number_of_days) }}</td>
+            <td align=right>{{ "{:.2f}".format(amount.amount / number_of_days * 7) }}</td>
+            <td align=right>{{ "{:.2f}".format(amount.amount / number_of_months) }}</td>
+            <td>break down by: <select>
+                {% for other_category in amount %}
+                    <option> {{ other_category }} </option>
+                {% endfor %}
+            </select></td>
         </tr>
     {% endfor %}
     </table>
