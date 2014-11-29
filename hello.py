@@ -4,7 +4,7 @@
 from __future__ import unicode_literals
 from collections import defaultdict
 from datetime import datetime
-from flask import Flask, request, render_template
+import flask
 from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import func, desc
 from app import create_app, db, csv
@@ -56,7 +56,7 @@ def show_stats():
         .add_columns(func.min(Transaction.date).label('minDate'))
     datespan = timespan[0][1] - timespan[0][2]
 
-    return render_template('stats.html',
+    return flask.render_template('stats.html',
         datespan = datespan,
         number_of_days = datespan.total_seconds() / (60*60*24),
         number_of_months = datespan.total_seconds() / (60*60*24*30),
@@ -76,12 +76,12 @@ def export_csv():
 def index():
     form = TransactionForm()
 
-    if request.method == 'POST':
+    if flask.request.method == 'POST':
         if form.validate_on_submit():
             transaction = form.to_transaction()
             db.session.add(transaction)
-            flash('Transaction added')
-            return redirect(url_for('index'))
+            flask.flash('Transaction added')
+            return flask.redirect(flask.url_for('index'))
         else:
             # debug
             for fieldName, errorMessages in form.errors.iteritems():
@@ -94,7 +94,7 @@ def index():
     # prepopulate currency with most common currency
     form.transactionCurrency.data = allCurrencies[0] if len(allCurrencies) > 0 else None
 
-    return render_template('index.html', form = form,
+    return flask.render_template('index.html', form = form,
         allCategories = allCategories, allCurrencies = allCurrencies)
 
 if __name__ == '__main__':

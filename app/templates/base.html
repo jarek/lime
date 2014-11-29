@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+<head>
+    {% block head %}
+    <title>Lime</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width">
+    <link rel="stylesheet" media="screen, projection" href="{{ url_for('static', filename='style.css') }}" />
+    {% endblock %}
+</head>
+<body>
+    {% block nav %}
+    <nav>
+    <ul>
+        <!-- TODO: this won't really be maintainable, redo with something like this instead:
+        http://stackoverflow.com/questions/11665401/jinja-is-there-any-built-in-variable-to-get-current-html-page-name -->
+        <li>
+            {% if request.path == '/' %}
+            home
+            {% else %}
+            <a href="{{ url_for('index') }}">home</a>
+            {% endif %}
+        </li>
+        <li>
+            {% if request.path == '/stats/' %}
+            stats
+            {% else %}
+            <a href="{{ url_for('show_stats') }}">stats</a>
+            {% endif %}
+        </li>
+        <li>
+            <a href="{{ url_for('export_csv') }}">export as CSV</a>
+        </li>
+    </ul>
+    </nav>
+    {% endblock %}
+    {% block body %}
+    {% endblock %}
+</body>
+</html>

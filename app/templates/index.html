@@ -1,5 +1,6 @@
-<!doctype html>
-<title>Lime</title>
+{% extends "base.html" %}
+
+{% block body %}
 
 <script type="text/javascript">
 var allCategories = {{ allCategories|tojson|safe }}
@@ -36,3 +37,6 @@ var allCurrencies = {{ allCurrencies|tojson|safe }}
     <p>{{ form.csrf_token }}
     {{ form.submit() }}
 </form>
+
+{% endblock %}
+

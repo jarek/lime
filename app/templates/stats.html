@@ -1,6 +1,6 @@
-<!doctype html>
-<title>Lime</title>
+{% extends "base.html" %}
 
+{% block body %}
 
 {% for category in amount_categories %}
     {% if category[0].description is not none: %}
@@ -31,3 +31,6 @@
     {% endfor %}
     </table>
 {% endfor %}
+
+{% endblock %}
+

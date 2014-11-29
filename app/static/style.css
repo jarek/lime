@@ -1,0 +1,69 @@
+/*notmuchhere*/
+
+html {
+    font-family: verdana, sans-serif;
+    font-size: 0.9em;
+}
+
+body {
+    width: 90%;
+    margin: 3% auto;
+}
+
+table {
+    font-size: 1em;
+    
+    border: 1px solid #000;
+    border-collapse: collapse;
+}
+
+td, th {
+    padding: 3px;
+}
+
+th {
+    font-weight: normal;
+    background: #eee;
+}
+
+tr.row-highlight {
+    background: #f6f6f6;
+}
+
+h1, h2, h3 {
+    margin-top: 1.5em;
+    font-family: Trebuchet MS;
+    font-weight: normal;
+    letter-spacing: 2px; 
+}
+
+h2 {
+    font-size: 1.8em;
+}
+
+h3 {
+    font-size: 1.4em;
+}
+
+nav {
+    border-bottom: 1px solid #eee;
+}
+
+nav ul {
+    padding: 0;
+}
+
+nav ul li {
+    display: inline;
+}
+
+nav ul li+li:before {
+    content: " · ";
+    padding-left: 1px;
+}
+
+.note, .info, .message {
+    padding: 1em;
+    border: 1px solid yellow;
+    background: #ffffd2;
+}
