@@ -23,7 +23,7 @@
             <td align=right>{{ "{:.2f}".format(amount.amount / number_of_days * 7) }}</td>
             <td align=right>{{ "{:.2f}".format(amount.amount / number_of_months) }}</td>
             <td>break down by: <select>
-                {% for other_category in amount %}
+                {% for other_category in amount.other %}
                     <option> {{ other_category }} </option>
                 {% endfor %}
             </select></td>
