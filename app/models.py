@@ -95,8 +95,8 @@ class Transaction(db.Model):
         return result
 
 class TransactionForm(wtf.Form):
-    transactionAmount = wtforms.DecimalField('Amount', [wtforms.validators.Required()])
-    merchant = wtforms.StringField('Merchant', [wtforms.validators.Required()])
+    transactionAmount = wtforms.DecimalField('Amount', [wtforms.validators.Required(message='An amount is required')])
+    merchant = wtforms.StringField('Merchant', [wtforms.validators.Required(message='A merchant name is required')])
     notes = wtforms.StringField('Notes')
     category = wtforms.StringField('Category')
     transactionCurrency = wtforms.StringField('Currency')

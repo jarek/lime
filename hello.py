@@ -73,13 +73,15 @@ def export_csv():
     return csv.transactions_to_csv_string(Transaction.query.all())
 
 @app.route('/', methods = ['GET', 'POST'])
-def show_home():
+def index():
     form = TransactionForm()
 
     if request.method == 'POST':
         if form.validate_on_submit():
             transaction = form.to_transaction()
             db.session.add(transaction)
+            flash('Transaction added')
+            return redirect(url_for('index'))
         else:
             # debug
             for fieldName, errorMessages in form.errors.iteritems():
