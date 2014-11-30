@@ -11,7 +11,7 @@ from app import create_app, db, csv
 from app.models import Transaction, TransactionForm
 
 
-app = create_app()
+app = create_app('default')
 
 
 def group(query, group_by):
@@ -49,6 +49,9 @@ def get_unique(query, group_by):
 
 @app.route('/stats/')
 def show_stats():
+    # TODO: this needs currency awareness. currently missing all non-GBP-denominated-or-converted
+    # transactions, which isn't too bad since it's mostly cash stuff but still.
+
     joint = Transaction.query.filter_by(person='').filter_by(bankCurrency = 'GBP')
 
     timespan = Transaction.query \

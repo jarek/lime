@@ -9,10 +9,9 @@ from app import create_app, db, csv
 from app.models import Transaction
 
 TEST_CSV = 'testinput.csv'
-TEST_SQLITE = 'tests.sqlite'
 
 # requires:
-# - that a TEST_SQLITE file exists in app directory - easiest to copy an existing database
+# - that a TEST_SQLITE file exists in root directory - easiest to copy an existing database
 # - that a TEST_CSV valid import CSV is specified and exists in root directory
 #   - must not have row headings or empty lines
 #   - newlines must be \n with no newline after last entry in the file
@@ -24,7 +23,7 @@ TEST_SQLITE = 'tests.sqlite'
 
 class ImportExportTestCase(unittest.TestCase):
     def setUp(self):
-        self.app = create_app(TEST_SQLITE)
+        self.app = create_app('testing')
         self.app_context = self.app.app_context()
         self.app_context.push()
 

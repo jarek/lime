@@ -8,17 +8,14 @@ from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import func, desc
 import os
 import datetime
-
+from config import config
 
 db = SQLAlchemy()
 
-def create_app(database_file = 'data.sqlite'):
+def create_app(config_name):
     app = Flask(__name__)
-
-    basedir = os.path.abspath(os.path.dirname(__file__))
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, database_file)
-    app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
-    app.config['SECRET_KEY'] = 'TODO: input a proper key for CSRF protection'
+    app.config.from_object(config[config_name])
+    config[config_name].init_app(app)
     
     db.init_app(app)
 
