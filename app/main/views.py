@@ -7,11 +7,9 @@ from datetime import datetime
 import flask
 from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import func, desc
-from app import create_app, db, csv
-from app.models import Transaction, TransactionForm
-
-
-app = create_app('default')
+from . import main
+from .. import db, csv
+from ..models import Transaction, TransactionForm
 
 
 def group(query, group_by):
@@ -47,7 +45,7 @@ def get_unique(query, group_by):
     # sort by count t[1] and return names t[0]
     return [t[0] for t in sorted(sums.items(), key=lambda t: t[1], reverse = True)]
 
-@app.route('/stats/')
+@main.route('/stats/')
 def show_stats():
     # TODO: this needs currency awareness. currently missing all non-GBP-denominated-or-converted
     # transactions, which isn't too bad since it's mostly cash stuff but still.
@@ -71,11 +69,11 @@ def show_stats():
             make_template_data(group(Transaction.query, Transaction.merchant)[:20], "top 20 merchants")
         ])
 
-@app.route('/export/')
+@main.route('/export/')
 def export_csv():
     return csv.transactions_to_csv_string(Transaction.query.all())
 
-@app.route('/', methods = ['GET', 'POST'])
+@main.route('/', methods = ['GET', 'POST'])
 def index():
     form = TransactionForm()
 
@@ -84,7 +82,7 @@ def index():
             transaction = form.to_transaction()
             db.session.add(transaction)
             flask.flash('Transaction added')
-            return flask.redirect(flask.url_for('index'))
+            return flask.redirect(flask.url_for('.index'))
         else:
             # debug
             for fieldName, errorMessages in form.errors.iteritems():
@@ -99,7 +97,4 @@ def index():
 
     return flask.render_template('index.html', form = form,
         allCategories = allCategories, allCurrencies = allCurrencies)
-
-if __name__ == '__main__':
-    app.run(debug=True)
 

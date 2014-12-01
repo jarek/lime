@@ -18,18 +18,18 @@
             {% if request.path == '/' %}
             home
             {% else %}
-            <a href="{{ url_for('index') }}">home</a>
+            <a href="{{ url_for('main.index') }}">home</a>
             {% endif %}
         </li>
         <li>
             {% if request.path == '/stats/' %}
             stats
             {% else %}
-            <a href="{{ url_for('show_stats') }}">stats</a>
+            <a href="{{ url_for('main.show_stats') }}">stats</a>
             {% endif %}
         </li>
         <li>
-            <a href="{{ url_for('export_csv') }}">export as CSV</a>
+            <a href="{{ url_for('main.export_csv') }}">export as CSV</a>
         </li>
     </ul>
     </nav>
