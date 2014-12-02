@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 import os
 from flask.ext.script import Manager, Shell
 #from flask.ext.migrate import Migrate, MigrateCommand
-from app import create_app, db
+from app import create_app, db, csv
 from app.models import Transaction, TransactionForm
 
 
@@ -27,7 +27,18 @@ def test():
     tests = unittest.TestLoader().discover('tests')
     unittest.TextTestRunner(verbosity=2).run(tests)
 
+@manager.command
+def setup(source_file):
+    # create database if not present
+    try:
+        Transaction.query.all()
+    except:
+        db.create_all()
+
+    # import file contents
+    csv.db_populate_from_file(source_file)
+
+
 if __name__ == '__main__':
     manager.run()
-
 

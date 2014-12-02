@@ -28,8 +28,8 @@ class ImportExportTestCase(unittest.TestCase):
 
         # drop everything currently in the database and recreate/reimport
         db.drop_all()
-        db.create_all()        
-        self.import_csv(TEST_CSV)
+        db.create_all()
+        csv.db_populate_from_file(TEST_CSV)
 
     def tearDown(self):
         db.session.remove()
@@ -57,12 +57,4 @@ class ImportExportTestCase(unittest.TestCase):
         #"""
 
         self.assertEqual(original, new)
-
-    # TODO: move to a better spot? it's db/csv intersection code... hmm
-    def import_csv(self, filename):
-        with open(filename, 'rb') as csvfile:
-            for transaction in csv.transactions_from_csv(csvfile):
-                db.session.add(transaction)
-
-        db.session.commit()
 

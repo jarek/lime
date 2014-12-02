@@ -4,6 +4,7 @@
 from __future__ import unicode_literals
 import unicodecsv
 from cStringIO import StringIO
+from . import db
 from models import Transaction
 
 
@@ -29,4 +30,12 @@ def transactions_to_csv_string(all_transactions):
     f = StringIO()
 
     return transactions_to_csv(f, all_transactions).getvalue()
+
+# helper function to load all data in a CSV file into db
+def db_populate_from_file(filename):
+    with open(filename, 'rb') as csvfile:
+        for transaction in transactions_from_csv(csvfile):
+            db.session.add(transaction)
+
+    db.session.commit()
 
