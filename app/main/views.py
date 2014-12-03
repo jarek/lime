@@ -5,22 +5,11 @@ from __future__ import unicode_literals
 from collections import defaultdict
 from datetime import datetime
 import flask
-from flask.ext.sqlalchemy import SQLAlchemy
-from sqlalchemy.sql import func, desc
+from sqlalchemy.sql import func
 from . import main
-from .. import db, csv
+from .. import db, csv, query
 from ..models import Transaction, TransactionForm
 
-
-def group(query, group_by):
-    field_name = group_by.name.replace('Transaction.', '')
-    sums = query.add_columns(func.sum(Transaction.bankAmount).label('sum'))\
-        .group_by(group_by).order_by(desc('sum'))
-
-    return [{'key': getattr(s[0], field_name), \
-             'keyname': field_name, \
-             'data': s[0], \
-             'amount': s[1] if s[1] is not None else 0} for s in sums]
 
 def make_template_data(grouped_data, description = None):
     for grouped in grouped_data:
@@ -29,21 +18,32 @@ def make_template_data(grouped_data, description = None):
 
     return grouped_data
 
-def get_unique(query, group_by):
-    grouped = query.group_by(group_by).add_columns(func.count().label('count')).order_by(desc('count'))
+@main.route('/api/groups/')
+def get_groups():
+    data = Transaction.query
 
-    # sort by the count
-    # this is complicated by the fact that for bankCurrency/transactionCurrency,
-    # the database - and the query above - often doesn't have info for transactionCurrency,
-    # it is filled in in the object. so we have to loop over objects and group them again.
-    # TODO: easier way to do this? or require transactionCurrency to always be set in db?
-    sums = defaultdict(int)
-    for t in grouped:
-        name = getattr(t[0], group_by.name)
-        sums[name] += t[1]
+    filters = flask.request.args.get('query', '')
+    if filters != '':
+        filters = flask.json.loads(filters)
+        data = data.filter_by(**filters) #.filter(Transaction.date >= '2014-11-01')
 
-    # sort by count t[1] and return names t[0]
-    return [t[0] for t in sorted(sums.items(), key=lambda t: t[1], reverse = True)]
+    group_by = flask.request.args['group_by'] # this is required so KeyError on missing is okay
+    data = query.group_format(data, group_by)
+
+    return flask.jsonify({'groups': data})
+
+@main.route('/api/transactions/')
+def get_transactions():
+    data = Transaction.query
+
+    filters = flask.request.args.get('query', '')
+    if filters != '':
+        filters = flask.json.loads(filters)
+        data = data.filter_by(**filters) #.filter(Transaction.date >= '2014-11-01')
+
+    transactions = [t.to_dict() for t in data]
+
+    return flask.jsonify({'transactions': transactions})
 
 @main.route('/stats/')
 def show_stats():
@@ -62,11 +62,11 @@ def show_stats():
         number_of_days = datespan.total_seconds() / (60*60*24),
         number_of_months = datespan.total_seconds() / (60*60*24*30),
         amount_categories = [
-            make_template_data(group(Transaction.query, Transaction.person), "per person"),
-            make_template_data(group(joint, Transaction.account), "joint transactions by account"),
-            make_template_data(group(Transaction.query, Transaction.category), "all transactions by category"),
-            make_template_data(group(joint.filter_by(account='cash'), Transaction.category), "cash transactions"),
-            make_template_data(group(Transaction.query, Transaction.merchant)[:20], "top 20 merchants")
+            make_template_data(query.group_format(Transaction.query, Transaction.person), "per person"),
+            make_template_data(query.group_format(joint, Transaction.account), "joint transactions by account"),
+            make_template_data(query.group_format(Transaction.query, Transaction.category), "all transactions by category"),
+            make_template_data(query.group_format(joint.filter_by(account='cash'), Transaction.category), "cash transactions"),
+            make_template_data(query.group_format(Transaction.query, Transaction.merchant)[:20], "top 20 merchants")
         ])
 
 @main.route('/export/')
@@ -89,8 +89,8 @@ def index():
                 for err in errorMessages:
                     print fieldName, err
 
-    allCategories = get_unique(Transaction.query, Transaction.category)
-    allCurrencies = get_unique(Transaction.query, Transaction.transactionCurrency)
+    allCategories = query.get_unique(Transaction.query, Transaction.category)
+    allCurrencies = query.get_unique(Transaction.query, Transaction.transactionCurrency)
 
     # prepopulate currency with most common currency
     form.transactionCurrency.data = allCurrencies[0] if len(allCurrencies) > 0 else None

@@ -3,12 +3,12 @@
 {% block body %}
 
 {% for category in amount_categories %}
-    {% if category[0].description is not none: %}
+    {% if category|length and category[0].description is not none: %}
         <h2>{{ category[0].description }}</h2>
     {% endif %}
     <table border=1>
         <tr>
-            <th>{{ category[0].keyname }}</th>
+            <th>{{ category[0].keyname if category|length else '' }}</th>
             <th>amount</th>
             <th>per day</th>
             <th>per week</th>
