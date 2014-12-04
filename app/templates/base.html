@@ -3,10 +3,27 @@
 <head>
     {% block head %}
     <title>Lime</title>
-    <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width">
     <link rel="stylesheet" media="screen, projection" href="{{ url_for('static', filename='style.css') }}" />
     {% endblock %}
+    <meta charset="utf-8" />
+    <script type="text/javascript">
+        function API_endpoint(endpoint, params) {
+            var paramsArr = [];
+            for (var key in params) {
+                paramsArr.push(key + "=" + params[key]);
+            }
+
+            return endpoint + "?" + paramsArr.join("&");
+        }
+
+        function XHR(url, onload) {
+            oReq = new XMLHttpRequest();
+            oReq.addEventListener("load", onload);
+            oReq.open("GET", url);
+            oReq.send();
+        }
+    </script>
 </head>
 <body>
     {% block nav %}

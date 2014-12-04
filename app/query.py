@@ -39,6 +39,7 @@ def group_format(query, group_by_field):
     return [{'key': getattr(s[0], field.name), \
              'keyname': field.name, \
              #'data': s[0], \
+             'filter': {field.name: getattr(s[0], field.name)}, \
              'amount': s[1] if s[1] is not None else 0} for s in sums]
 
 def get_unique(query, group_by):

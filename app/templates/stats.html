@@ -16,21 +16,50 @@
             <th></th>
         </tr>
     {% for amount in category %}
-        <tr>
+        <tr data-filter="{{ amount.filter|tojson|forceescape }}">
             <td>{{ amount.key or "<blank>" }}</td>
             <td align=right>{{ "{:.2f}".format(amount.amount) }}</td>
             <td align=right>{{ "{:.2f}".format(amount.amount / number_of_days) }}</td>
             <td align=right>{{ "{:.2f}".format(amount.amount / number_of_days * 7) }}</td>
             <td align=right>{{ "{:.2f}".format(amount.amount / number_of_months) }}</td>
-            <td>break down by: <select>
+            <td><button class="transactions_go">show all</button> | 
+            break down by: <select class="group_by">
                 {% for other_category in amount.other %}
                     <option> {{ other_category }} </option>
                 {% endfor %}
-            </select></td>
+            </select>
+            <button class="group_go">go</button>
+            </td>
         </tr>
     {% endfor %}
     </table>
 {% endfor %}
+
+<script type="text/javascript">
+
+var groupButtons = [].slice.call(document.querySelectorAll('button.group_go'));
+groupButtons.forEach(function (button) {
+    button.addEventListener('click', function (ev) {
+        var tr = this.parentNode.parentNode;
+        var select = tr.querySelector('select.group_by');
+
+        var url = API_endpoint("{{ url_for('main.get_groups') }}", {'query': tr.dataset.filter, 'group_by': select.value});
+
+        XHR(url, function () { console.log(JSON.parse(this.responseText)); });    });
+});
+
+var transactionButtons = [].slice.call(document.querySelectorAll('button.transactions_go'));
+transactionButtons.forEach(function (button) {
+    button.addEventListener('click', function (ev) {
+        var tr = this.parentNode.parentNode;
+
+        var url = API_endpoint("{{ url_for('main.get_transactions') }}", {'query': tr.dataset.filter});
+
+        XHR(url, function () { console.log(JSON.parse(this.responseText)); });
+    });
+});
+
+</script>
 
 {% endblock %}
 
