@@ -12,10 +12,10 @@ def get_field_by_name(field_name):
     if isinstance(field_name, sqlalchemy.orm.attributes.InstrumentedAttribute):
         return field_name
     else:
-        transaction_fields = vars(Transaction)
+        field = getattr(Transaction, field_name, None)
 
-        if field_name in transaction_fields and isinstance(transaction_fields[field_name], sqlalchemy.orm.attributes.InstrumentedAttribute):
-            return transaction_fields[field_name]
+        if isinstance(field, sqlalchemy.orm.attributes.InstrumentedAttribute):
+            return field
         else:
             return None
 
