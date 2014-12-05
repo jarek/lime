@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 from collections import defaultdict
 import sqlalchemy
 from sqlalchemy.sql import func, desc
+from . import db
 from models import Transaction
 
 
@@ -19,42 +20,46 @@ def get_field_by_name(field_name):
         else:
             return None
 
-def group(query, group_by_field):
+def all():
+    return db.session.query()
+
+def for_field(field_name):
+    return db.session.query(get_field_by_name(field_name))
+
+def group(group_by_field, query = None):
     field = get_field_by_name(group_by_field)
+
+    if query is None:
+        query = for_field(field)
 
     if field is None:
         return query
     else:
-        return query.add_columns(func.sum(Transaction.bankAmount).label('sum' + field.name))\
-                    .group_by(field).order_by(desc('sum' + field.name))
+        return query.add_columns(func.sum(Transaction.bankAmount).label('sum')) \
+                    .group_by(field).order_by(desc('sum'))
 
-def group_format(query, group_by_field):
+def group_count(group_by_field, query = None):
+    field = get_field_by_name(group_by_field)
+
+    if query is None:
+        query = for_field(field)
+
+    if field is None:
+        return query
+    else:
+        return query.add_columns(func.count(field).label('count')) \
+                    .group_by(field).order_by(desc('count'))
+
+def group_format(group_by_field, query = None):
     field = get_field_by_name(group_by_field)
 
     if field is None:
         return []
 
-    sums = group(query, field)
+    sums = group(field, query)
 
-    return [{'key': getattr(s[0], field.name), \
+    return [{'key': s[0],
              'keyname': field.name, \
-             #'data': s[0], \
-             'filter': {field.name: getattr(s[0], field.name)}, \
+             'filter': {field.name: s[0]}, \
              'amount': s[1] if s[1] is not None else 0} for s in sums]
-
-def get_unique(query, group_by):
-    grouped = query.group_by(group_by).add_columns(func.count().label('count')).order_by(desc('count'))
-
-    # sort by the count
-    # this is complicated by the fact that for bankCurrency/transactionCurrency,
-    # the database - and the query above - often doesn't have info for transactionCurrency,
-    # it is filled in in the object. so we have to loop over objects and group them again.
-    # TODO: easier way to do this? or require transactionCurrency to always be set in db?
-    sums = defaultdict(int)
-    for t in grouped:
-        name = getattr(t[0], group_by.name)
-        sums[name] += t[1]
-
-    # sort by count t[1] and return names t[0]
-    return [t[0] for t in sorted(sums.items(), key=lambda t: t[1], reverse = True)]
 

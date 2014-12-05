@@ -20,6 +20,7 @@ class Config:
 class DevelopmentConfig(Config):
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'data.sqlite')
+    SQLALCHEMY_DATABASE_URI = 'postgresql://pg_lime_dev:password@localhost/pg_lime_dev'
 
 class TestingConfig(Config):
     TESTING = True
