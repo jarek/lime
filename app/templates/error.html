@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<h2>Error{% if error_message_title: %}: {{ error_message_title }}{% endif %}</h2>
+
+<p>{{ error_message }}</p>
+
+{% endblock %}
+

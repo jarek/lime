@@ -27,6 +27,9 @@
 </head>
 <body>
     {% block nav %}
+    {% if hide_nav: %}
+    <!-- nav removed -->
+    {% else %}
     <nav>
     <ul>
         <!-- TODO: this won't really be maintainable, redo with something like this instead:
@@ -50,6 +53,7 @@
         </li>
     </ul>
     </nav>
+    {% endif %}
     {% endblock %}
     {% block body %}
     {% endblock %}

@@ -72,8 +72,26 @@ def show_stats():
 def export_csv():
     return csv.transactions_to_csv_string(Transaction.query.all())
 
+@main.route('/setup/')
+def setup():
+    try:
+        db.create_all()
+        # table found or created, can proceed to import
+        return flask.render_template('import.html', hide_nav = True)
+    except:
+        return flask.render_template('error.html', hide_nav = True,
+            error_message_title = 'cannot find database, are you sure it exists?',
+            error_message = 'Try to CREATE DATABASE')
+
 @main.route('/', methods = ['GET', 'POST'])
 def index():
+    try:
+        # try to cause error if the table is not present
+        query.for_field(Transaction.category).first()
+    except:
+        # redirect to setup page if table is not present
+        return flask.redirect(flask.url_for('.setup'))
+
     form = TransactionForm()
 
     if flask.request.method == 'POST':
