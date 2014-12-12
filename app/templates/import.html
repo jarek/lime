@@ -6,5 +6,11 @@
 
 <p>Paste in CSV:</p>
 
+<form method="POST">
+    <p>{{ form.lines(style="height: 400px; width: 100%;") }}
+    <p>{{ form.csrf_token }}
+    {{ form.submit() }}
+</form>
+
 {% endblock %}
 

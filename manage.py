@@ -36,7 +36,8 @@ def setup(source_file):
         db.create_all()
 
     # import file contents
-    csv.db_populate_from_file(source_file)
+    with open(source_file, 'rb') as csvfile:
+        csv.db_populate_from_csv_iterable(csvfile)
 
 
 if __name__ == '__main__':

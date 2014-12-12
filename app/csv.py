@@ -31,11 +31,10 @@ def transactions_to_csv_string(all_transactions):
 
     return transactions_to_csv(f, all_transactions).getvalue()
 
-# helper function to load all data in a CSV file into db
-def db_populate_from_file(filename):
-    with open(filename, 'rb') as csvfile:
-        for transaction in transactions_from_csv(csvfile):
-            db.session.add(transaction)
+# helper function to load all data in a CSV file/iterable into db
+def db_populate_from_csv_iterable(lines):
+    for transaction in transactions_from_csv(lines):
+        db.session.add(transaction)
 
     db.session.commit()
 

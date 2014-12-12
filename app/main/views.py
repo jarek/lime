@@ -8,7 +8,7 @@ import flask
 from sqlalchemy.sql import func
 from . import main
 from .. import db, csv, query
-from ..models import Transaction, TransactionForm
+from ..models import Transaction, TransactionForm, CSVImportForm
 
 
 def make_template_data(grouped_data, description = None):
@@ -72,16 +72,29 @@ def show_stats():
 def export_csv():
     return csv.transactions_to_csv_string(Transaction.query.all())
 
-@main.route('/setup/')
-def setup():
+@main.route('/import/', methods = ['GET', 'POST'])
+def import_from_csv():
     try:
         db.create_all()
-        # table found or created, can proceed to import
-        return flask.render_template('import.html', hide_nav = True)
     except:
-        return flask.render_template('error.html', hide_nav = True,
+        return flask.render_template('error.html', hide_nav = True, hide_footer = True,
             error_message_title = 'cannot find database, are you sure it exists?',
             error_message = 'Try to CREATE DATABASE')
+
+    form = CSVImportForm()
+
+    # check form, call csv.db_populate_from_csv_iterable with contents
+    if flask.request.method == 'POST':
+        if form.validate_on_submit():
+            # encode('utf8') is needed because unicodecsv works on bytestrings
+            # http://stackoverflow.com/questions/21479589
+            lines = [line.rstrip().encode('utf8') for line in form.lines.data.split('\n')]
+            csv.db_populate_from_csv_iterable(lines)
+            flask.flash('Imported %d transactions' % len(lines))
+            return flask.redirect(flask.url_for('.index'))
+
+    # table found or created, can proceed to import
+    return flask.render_template('import.html', hide_nav = True, form = CSVImportForm())
 
 @main.route('/', methods = ['GET', 'POST'])
 def index():
@@ -90,7 +103,7 @@ def index():
         query.for_field(Transaction.category).first()
     except:
         # redirect to setup page if table is not present
-        return flask.redirect(flask.url_for('.setup'))
+        return flask.redirect(flask.url_for('.import_from_csv'))
 
     form = TransactionForm()
 

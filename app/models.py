@@ -116,3 +116,7 @@ class TransactionForm(wtf.Form):
 
         return Transaction().from_dict(as_dict)
 
+class CSVImportForm(wtf.Form):
+    lines = wtforms.TextAreaField('CSV lines', [wtforms.validators.Required(message='At least one line is required')])
+    submit = wtforms.SubmitField('Import')
+
