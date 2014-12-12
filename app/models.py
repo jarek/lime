@@ -120,3 +120,7 @@ class CSVImportForm(wtf.Form):
     lines = wtforms.TextAreaField('CSV lines', [wtforms.validators.Required(message='At least one line is required')])
     submit = wtforms.SubmitField('Import')
 
+class ConfirmForm(wtf.Form):
+    confirm = wtforms.BooleanField(validators = [wtforms.validators.Required(message='Must be checked')])
+    submit = wtforms.SubmitField('Confirm')
+

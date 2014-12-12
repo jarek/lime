@@ -20,8 +20,11 @@ def get_field_by_name(field_name):
         else:
             return None
 
-def all():
-    return db.session.query()
+def all(param = None):
+    if param:
+        return db.session.query(param)
+    else:
+        return db.session.query()
 
 def for_field(field_name):
     return db.session.query(get_field_by_name(field_name))

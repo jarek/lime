@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<h2>{{ confirm_title or 'Confirm' }}</h2>
+
+<form method="POST">
+    <p>{{ form.confirm() }} {{ form.confirm.label }}
+    <p>{{ form.csrf_token }} {{ form.submit() }}
+</form>
+
+{% endblock %}
+

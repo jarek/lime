@@ -8,7 +8,7 @@ import flask
 from sqlalchemy.sql import func
 from . import main
 from .. import db, csv, query
-from ..models import Transaction, TransactionForm, CSVImportForm
+from ..models import Transaction, TransactionForm, CSVImportForm, ConfirmForm
 
 
 def make_template_data(grouped_data, description = None):
@@ -94,7 +94,20 @@ def import_from_csv():
             return flask.redirect(flask.url_for('.index'))
 
     # table found or created, can proceed to import
-    return flask.render_template('import.html', hide_nav = True, form = CSVImportForm())
+    return flask.render_template('import.html', hide_nav = True, form = form)
+
+@main.route('/clear/', methods = ['GET', 'POST'])
+def clear_db():
+    form = ConfirmForm()
+    form.confirm.label = 'Remove all transactions'
+
+    if flask.request.method == 'POST':
+        if form.validate_on_submit() and form.confirm.data == True:
+            deleted_rows = query.all(Transaction).delete()
+            flask.flash('%d transactions deleted' % deleted_rows)
+            return flask.redirect(flask.url_for('.index'))
+
+    return flask.render_template('confirm.html', confirm_title = 'Confirm clearing database', form = form)
 
 @main.route('/', methods = ['GET', 'POST'])
 def index():
