@@ -26,36 +26,44 @@
     </script>
 </head>
 <body>
+    {% macro menu_item(endpoint, display) %}
+        {% if request.endpoint != endpoint %}
+            <a href="{{ url_for(endpoint) }}">{{ display }}</a>
+        {% else %}
+            {{ display }}
+        {% endif %}
+    {% endmacro %}
+
     {% block nav %}
     {% if hide_nav: %}
     <!-- nav removed -->
     {% else %}
     <nav>
     <ul>
-        <!-- TODO: this won't really be maintainable, redo with something like this instead:
-        http://stackoverflow.com/questions/11665401/jinja-is-there-any-built-in-variable-to-get-current-html-page-name -->
-        <li>
-            {% if request.path == '/' %}
-            home
-            {% else %}
-            <a href="{{ url_for('main.index') }}">home</a>
-            {% endif %}
-        </li>
-        <li>
-            {% if request.path == '/stats/' %}
-            stats
-            {% else %}
-            <a href="{{ url_for('main.show_stats') }}">stats</a>
-            {% endif %}
-        </li>
-        <li>
-            <a href="{{ url_for('main.export_csv') }}">export as CSV</a>
-        </li>
+        <li>{{ menu_item('main.index', 'home') }}</li>
+        <li>{{ menu_item('main.show_stats', 'stats') }}</li>
+        <li>{{ menu_item('main.export_csv', 'export as CSV') }}</li>
     </ul>
     </nav>
     {% endif %}
     {% endblock %}
+
     {% block body %}
     {% endblock %}
+
+    {% block footer %}
+    {% if hide_footer: %}
+    <!-- footer removed -->
+    {% else %}
+    <footer>
+    <ul>
+        <li>{{ menu_item('main.index', 'home') }}</li>
+        <li>{{ menu_item('main.import_from_csv', 'import') }}</li>
+        <li>{{ menu_item('main.clear_db', 'clear all rows') }}</li>
+    </ul>
+    </footer>
+    {% endif %}
+    {% endblock %}
+
 </body>
 </html>

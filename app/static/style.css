@@ -49,15 +49,20 @@ nav {
     border-bottom: 1px solid #eee;
 }
 
-nav ul {
+footer {
+    border-top: 1px solid #eee;
+    font-size: 0.8em;
+}
+
+nav ul, footer ul {
     padding: 0;
 }
 
-nav ul li {
+nav ul li, footer ul li {
     display: inline;
 }
 
-nav ul li+li:before {
+nav ul li+li:before, footer ul li+li:before {
     content: " · ";
     padding-left: 1px;
 }
