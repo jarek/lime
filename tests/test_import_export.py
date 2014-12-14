@@ -4,13 +4,14 @@
 from __future__ import unicode_literals
 import unittest
 from flask import current_app
-from app import create_app, db, csv
+from app import create_app, db, query, csv
 from app.models import Transaction
 
 TEST_CSV = 'testinput.csv'
 
 # requires:
-# - that a TEST_SQLITE file exists in root directory - easiest to copy an existing database
+# - that a valid SQLALCHEMY_DATABASE_URI is specified in config.py TestingConfig
+#   (tested specifically on PostgreSQL and SQLite)
 # - that a TEST_CSV valid import CSV is specified and exists in root directory
 #   - must not have row headings or empty lines
 #   - newlines must be \n with no newline after last entry in the file
@@ -29,7 +30,8 @@ class ImportExportTestCase(unittest.TestCase):
         # drop everything currently in the database and recreate/reimport
         db.drop_all()
         db.create_all()
-        csv.db_populate_from_file(TEST_CSV)
+        with open(TEST_CSV, 'rb') as csvfile:
+            csv.db_populate_from_csv_iterable(csvfile)
 
     def tearDown(self):
         db.session.remove()
@@ -42,13 +44,13 @@ class ImportExportTestCase(unittest.TestCase):
         self.assertFalse(current_app is None)
 
     def test_some_data_exists(self):
-        self.assertGreater(len(Transaction.query.all()), 0)
+        self.assertGreater(len(query.all(Transaction).all()), 0)
 
     def test_export_is_same_as_import(self):
         with open(TEST_CSV, 'rb') as csvfile:
             original = csvfile.read()
 
-        new = csv.transactions_to_csv_string(Transaction.query.all())
+        new = csv.transactions_to_csv_string(query.all(Transaction).order_by(Transaction.date.asc()))
 
         # uncomment to dump new string to file for testing
         """

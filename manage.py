@@ -27,13 +27,11 @@ def test():
     tests = unittest.TestLoader().discover('tests')
     unittest.TextTestRunner(verbosity=2).run(tests)
 
+# this functionality is now also available via web in app/main/views.py : import_from_csv()
 @manager.command
 def setup(source_file):
     # create database if not present
-    try:
-        Transaction.query.all()
-    except:
-        db.create_all()
+    db.create_all()
 
     # import file contents
     with open(source_file, 'rb') as csvfile:

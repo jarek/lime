@@ -6,7 +6,7 @@ This started out of a spending-tracking spreadsheet and the basic goal is to do 
 
 # Current status
 
-- Importing from a CSV into a SQLite database and exporting back to CSV
+- Importing from a CSV into a SQL database (tested with SQLite and PostgreSQL) and exporting back to CSV
 - Adding new transactions from web page
 - Basic stats on transactions (grouped by category, merchant, etc), currently fairly hardcoded
 - Basic JSON API for getting transactions and stats, not yet used anywhere

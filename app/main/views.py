@@ -34,7 +34,7 @@ def get_groups():
 
 @main.route('/api/transactions/')
 def get_transactions():
-    data = Transaction.query
+    data = query.all(Transaction).order_by(Transaction.date.asc())
 
     filters = flask.request.args.get('query', '')
     if filters != '':
@@ -70,7 +70,7 @@ def show_stats():
 
 @main.route('/export/')
 def export_csv():
-    return csv.transactions_to_csv_string(Transaction.query.all())
+    return csv.transactions_to_csv_string(query.all(Transaction).order_by(Transaction.date.asc()))
 
 @main.route('/import/', methods = ['GET', 'POST'])
 def import_from_csv():
