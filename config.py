@@ -8,6 +8,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or '03fde23919b25d59cbdb8feef8e31396af7a707b'
+    WEB_PASSWORD = os.environ.get('LIME_WEB_PASSWORD')
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
 
     @staticmethod
@@ -19,6 +20,7 @@ class DevelopmentConfig(Config):
     # sqlite connection strings look like:
     # SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'data.sqlite')
     SQLALCHEMY_DATABASE_URI = 'postgresql://pg_lime_dev:password@localhost/pg_lime_dev'
+    WEB_PASSWORD = os.environ.get('LIME_WEB_PASSWORD') or 'F5Yanm43k29b8Q'
 
 class TestingConfig(Config):
     TESTING = True
