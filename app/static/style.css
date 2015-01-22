@@ -72,3 +72,7 @@ nav ul li+li:before, footer ul li+li:before {
     border: 1px solid yellow;
     background: #ffffd2;
 }
+
+.helper {
+    color: #aaa;
+}
