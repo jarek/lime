@@ -2,26 +2,29 @@
 
 {% block body %}
 
-{% for category in amount_categories %}
-    {% if category|length and category[0].description is not none: %}
-        <h2>{{ category[0].description }}</h2>
+{% for category in amount_data %}
+    {% if category.description is not none: %}
+        <h2>{{ category.description }}</h2>
     {% endif %}
     <table border=1>
         <tr>
-            <th>{{ category[0].keyname if category|length else '' }}</th>
+            <th>{{ category.keyname or '' }}</th>
             <th>amount</th>
             <th>per day</th>
             <th>per week</th>
             <th>per month</th>
+            <th><abbr title="currency">curr</abbr></th>
             <th></th>
         </tr>
-    {% for amount in category %}
+    {% for key in category['data'] %}
+        {% for amount in category['data'][key] %}
         <tr data-filter="{{ amount.filter|tojson|forceescape }}">
             <td>{{ amount.key or "<blank>" }}</td>
             <td align=right>{{ "{:.2f}".format(amount.amount) }}</td>
             <td align=right>{{ "{:.2f}".format(amount.amount / number_of_days) }}</td>
             <td align=right>{{ "{:.2f}".format(amount.amount / number_of_days * 7) }}</td>
             <td align=right>{{ "{:.2f}".format(amount.amount / number_of_months) }}</td>
+            <td>{{ amount.currency }}</td>
             <td><button class="transactions_go">show all</button> | 
             break down by: <select class="group_by">
                 {% for other_category in amount.other %}
@@ -31,6 +34,7 @@
             <button class="group_go">go</button>
             </td>
         </tr>
+        {% endfor %}
     {% endfor %}
     </table>
 {% endfor %}

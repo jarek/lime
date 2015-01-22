@@ -2,8 +2,7 @@
 # coding=utf-8
 
 from __future__ import unicode_literals
-from collections import defaultdict
-from datetime import datetime
+from collections import OrderedDict
 import flask
 from sqlalchemy.sql import func
 from . import main
@@ -11,12 +10,26 @@ from .. import db, csv, query
 from ..models import Transaction, TransactionForm, CSVImportForm, ConfirmForm
 
 
-def make_template_data(grouped_data, description = None):
-    for grouped in grouped_data:
-        grouped['other'] = [f for f in Transaction.CLASSIFICATION_FIELDS if f != grouped['keyname']]
-        grouped['description'] = description
+def make_template_data(processed_data, description = None):
+    result = {
+        'description': description,
+        'data': processed_data
+    }
 
-    return grouped_data
+    for key in processed_data:
+        list_for_key = processed_data[key]
+
+        if len(list_for_key) == 0:
+            continue
+
+        keyname = list_for_key[0]['keyname']
+        result['keyname'] = keyname
+        others = [f for f in Transaction.CLASSIFICATION_FIELDS if f != keyname]
+
+        for item in list_for_key:
+            item['other'] = others
+
+    return result
 
 @main.route('/api/groups/')
 def get_groups():
@@ -47,26 +60,30 @@ def get_transactions():
 
 @main.route('/stats/')
 def show_stats():
-    # TODO: this needs currency awareness. currently missing all non-GBP-denominated-or-converted
-    # transactions, which isn't too bad since it's mostly cash stuff but still.
-
-    joint = query.for_field(Transaction.account).filter_by(person='', bankCurrency = 'GBP')
+    joint = query.for_field(Transaction.account).filter_by(person='')
 
     timespan = query.all() \
         .add_columns(func.max(Transaction.date).label('maxDate')) \
         .add_columns(func.min(Transaction.date).label('minDate'))
     datespan = timespan[0][0] - timespan[0][1]
 
+    merchants = query.group_format(Transaction.merchant)
+    top_merchants = OrderedDict()
+    for key in merchants.keys()[0:20]:
+        top_merchants[key] = merchants[key]
+
+    amount_data = [
+        make_template_data(query.group_format(Transaction.person), "per person"),
+        make_template_data(query.group_format(Transaction.account, joint), "joint transactions by account"),
+        make_template_data(query.group_format(Transaction.category), "all transactions by category"),
+        make_template_data(top_merchants, "top 20 merchants")
+    ]
+
     return flask.render_template('stats.html',
-        datespan = datespan,
-        number_of_days = datespan.total_seconds() / (60*60*24),
-        number_of_months = datespan.total_seconds() / (60*60*24*30),
-        amount_categories = [
-            make_template_data(query.group_format(Transaction.person), "per person"),
-            make_template_data(query.group_format(Transaction.account, joint), "joint transactions by account"),
-            make_template_data(query.group_format(Transaction.category), "all transactions by category"),
-            make_template_data(query.group_format(Transaction.merchant)[:20], "top 20 merchants")
-        ])
+                                 datespan=datespan,
+                                 number_of_days=datespan.total_seconds() / (60*60*24),
+                                 number_of_months=datespan.total_seconds() / (60*60*24*30),
+                                 amount_data=amount_data)
 
 @main.route('/export/')
 def export_csv():

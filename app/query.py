@@ -2,7 +2,7 @@
 # coding=utf-8
 
 from __future__ import unicode_literals
-from collections import defaultdict
+from collections import OrderedDict
 import sqlalchemy
 from sqlalchemy.sql import func, desc
 from . import db
@@ -38,8 +38,10 @@ def group(group_by_field, query = None):
     if field is None:
         return query
     else:
-        return query.add_columns(func.sum(Transaction.bankAmount).label('sum')) \
-                    .group_by(field).order_by(desc('sum'))
+        return query.filter(Transaction.transactionCurrency != '') \
+                    .add_columns(func.sum(Transaction.transactionAmount).label('sum')) \
+                    .add_columns(Transaction.transactionCurrency.label('currency')) \
+                    .group_by(field, Transaction.transactionCurrency).order_by(desc('sum'))
 
 def group_count(group_by_field, query = None):
     field = get_field_by_name(group_by_field)
@@ -61,8 +63,19 @@ def group_format(group_by_field, query = None):
 
     sums = group(field, query)
 
-    return [{'key': s[0],
-             'keyname': field.name, \
-             'filter': {field.name: s[0]}, \
-             'amount': s[1] if s[1] is not None else 0} for s in sums]
+    results = OrderedDict()
 
+    for s in sums:
+        key = s[0]
+        if key not in results:
+            results[key] = []
+
+        results[key].append(
+            {'key': key,
+             'keyname': field.name,
+             'filter': {field.name: key},
+             'currency': s[2],
+             'amount': s[1] if s[1] is not None else 0}
+        )
+
+    return results
